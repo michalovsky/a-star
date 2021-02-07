@@ -1,6 +1,6 @@
 #include "PathFinding.h"
 
-
+#include <cmath>
 
 PathFinding::PathFinding()
 {

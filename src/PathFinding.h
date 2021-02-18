@@ -1,8 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <list>
-
+#include "MapBuilder.h"
 #include "MapRenderer.h"
 #include "Node.h"
 
@@ -10,17 +8,18 @@ class PathFinding
 {
 public:
     PathFinding(sf::RenderWindow&);
-    ~PathFinding();
 
     void createMap();
     void drawMap(sf::RenderWindow& window);
     void updateMapByUser(sf::RenderWindow& window);
     void solveAStar();
-    Node* nodes;
+
+private:
     Node* nodeStart = nullptr;
     Node* nodeEnd = nullptr;
-    std::vector<sf::VertexArray> connections;
-    int mapWidth = 20;
-    int mapHeight = 20;
-    std::unique_ptr<graphics::MapRenderer> mapRenderer;
+    std::shared_ptr<graphics::MapRenderer> mapRenderer;
+    std::unique_ptr<graphics::MapBuilder> mapBuilder;
+    constexpr static int mapWidth = 20;
+    constexpr static int mapHeight = 20;
+    std::vector<Node> nodes;
 };

@@ -7,8 +7,7 @@ void clearWindow(sf::RenderWindow& window);
 int main()
 {
     sf::Clock clock;
-    sf::RenderWindow window(sf::VideoMode(1000, 800), "PathFinding A*");
-    window.setPosition(sf::Vector2i(10, 50));
+    sf::RenderWindow window(sf::VideoMode(910, 910), "PathFinding A*");
     window.setFramerateLimit(60);
     PathFinding pathFinding{window};
     pathFinding.createMap();
@@ -18,7 +17,7 @@ int main()
         sf::Time elapsed = clock.getElapsedTime();
         clearWindow(window);
 
-        if (elapsed.asSeconds() > 0.2)
+        if (elapsed.asSeconds() > 0.1)
         {
             clock.restart();
             pathFinding.updateMapByUser(window);

@@ -1,10 +1,11 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 
-class Node
+#include "RectangleSfml.h"
+#include <vector>
+#include <memory>
+
+struct Node
 {
-public:
-	Node();
 	bool obstacle = false;
 	bool visited = false;
 	float globalGoal; //dist to goal so far
@@ -12,6 +13,6 @@ public:
 	int x, y;
 	Node * parent;
 	std::vector<Node *> neighbours;
-	sf::RectangleShape rect;
+	std::unique_ptr<graphics::RectangleSfml> rect = nullptr;
 };
 

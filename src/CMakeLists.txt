@@ -1,5 +1,5 @@
 set(SOURCES
-        Node.cpp
+        RectangleSfml.cpp
         PathFinding.cpp
         Main.cpp
         )

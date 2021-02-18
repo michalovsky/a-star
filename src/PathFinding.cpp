@@ -1,6 +1,7 @@
 #include "PathFinding.h"
 
 #include <cmath>
+#include <SFML/Graphics.hpp>
 
 PathFinding::PathFinding()
 {
@@ -96,9 +97,9 @@ void PathFinding::createMap()
 			nodes[y*mapWidth + x].obstacle = false;
 			nodes[y*mapWidth + x].parent = nullptr;
 			nodes[y*mapWidth + x].visited = false;
-			nodes[y*mapWidth + x].rect.setSize(sf::Vector2f((float)40, (float)40));
-			nodes[y*mapWidth + x].rect.setFillColor(sf::Color::Blue);
-			nodes[y*mapWidth + x].rect.setPosition(5 + (x * 5) + 40 * x, 5 + (y * 5) + 40 * y);
+            const auto position = sf::Vector2f{5.f + (x * 5.f) + 40.f * x, 5.f + (y * 5.f) + 40.f * y};
+            const auto size = sf::Vector2f{40.f, 40.f};
+			nodes[y*mapWidth + x].rect = std::make_unique<graphics::RectangleSfml>(position, size, sf::Color::Blue);
 		}
 	}
 
@@ -111,32 +112,32 @@ void PathFinding::createMap()
 			{
 				nodes[y*mapWidth + x].neighbours.push_back(&nodes[(y - 1)*mapWidth + (x + 0)]);
 				sf::VertexArray lines(sf::Lines, 2);
-				lines[0].position = sf::Vector2f(nodes[y * mapWidth + x].rect.getPosition().x + 20, nodes[y * mapWidth + x].rect.getPosition().y + 10);
-				lines[1].position = sf::Vector2f(nodes[(y - 1) * mapWidth + x].rect.getPosition().x + 20, nodes[(y - 1) * mapWidth + x].rect.getPosition().y + 30);
+				lines[0].position = sf::Vector2f(nodes[y * mapWidth + x].rect->getX() + 20, nodes[y * mapWidth + x].rect->getY() + 10);
+				lines[1].position = sf::Vector2f(nodes[(y - 1) * mapWidth + x].rect->getX() + 20, nodes[(y - 1) * mapWidth + x].rect->getY() + 30);
 				connections.push_back(lines);
 			}
 			if (y < mapHeight - 1)
 			{
 				nodes[y*mapWidth + x].neighbours.push_back(&nodes[(y + 1)*mapWidth + (x + 0)]);
 				sf::VertexArray lines(sf::Lines, 2);
-				lines[0].position = sf::Vector2f(nodes[y * mapWidth + x].rect.getPosition().x + 20, nodes[y * mapWidth + x].rect.getPosition().y + 30);
-				lines[1].position = sf::Vector2f(nodes[(y + 1) * mapWidth + x].rect.getPosition().x + 20, nodes[(y + 1) * mapWidth + x].rect.getPosition().y + 10);
+				lines[0].position = sf::Vector2f(nodes[y * mapWidth + x].rect->getX() + 20, nodes[y * mapWidth + x].rect->getY() + 30);
+				lines[1].position = sf::Vector2f(nodes[(y + 1) * mapWidth + x].rect->getX() + 20, nodes[(y + 1) * mapWidth + x].rect->getY() + 10);
 				connections.push_back(lines);
 			}
 			if (x > 0)
 			{
 				nodes[y*mapWidth + x].neighbours.push_back(&nodes[(y + 0)*mapWidth + (x - 1)]);
 				sf::VertexArray lines(sf::Lines, 2);
-				lines[0].position = sf::Vector2f(nodes[y * mapWidth + x].rect.getPosition().x + 10, nodes[y * mapWidth + x].rect.getPosition().y + 20);
-				lines[1].position = sf::Vector2f(nodes[(y)* mapWidth + x - 1].rect.getPosition().x + 30, nodes[y * mapWidth + x - 1].rect.getPosition().y + 20);
+				lines[0].position = sf::Vector2f(nodes[y * mapWidth + x].rect->getX() + 10, nodes[y * mapWidth + x].rect->getY() + 20);
+				lines[1].position = sf::Vector2f(nodes[(y)* mapWidth + x - 1].rect->getX() + 30, nodes[y * mapWidth + x - 1].rect->getY() + 20);
 				connections.push_back(lines);
 			}
 			if (x < mapWidth - 1)
 			{
 				nodes[y*mapWidth + x].neighbours.push_back(&nodes[(y + 0)*mapWidth + (x + 1)]);
 				sf::VertexArray lines(sf::Lines, 2);
-				lines[0].position = sf::Vector2f(nodes[y * mapWidth + x].rect.getPosition().x + 30, nodes[y * mapWidth + x].rect.getPosition().y + 20);
-				lines[1].position = sf::Vector2f(nodes[(y)* mapWidth + x + 1].rect.getPosition().x + 10, nodes[(y)* mapWidth + x + 1].rect.getPosition().y + 20);
+				lines[0].position = sf::Vector2f(nodes[y * mapWidth + x].rect->getX() + 30, nodes[y * mapWidth + x].rect->getY() + 20);
+				lines[1].position = sf::Vector2f(nodes[(y)* mapWidth + x + 1].rect->getX() + 10, nodes[(y)* mapWidth + x + 1].rect->getY() + 20);
 				connections.push_back(lines);
 			}
 		}
@@ -170,9 +171,9 @@ void PathFinding::updateMapByUser(sf::RenderWindow & window)
 		{
 			for (int x = 0; x < mapWidth; x++)
 			{
-				int xpos = (int)nodes[y * mapWidth + x].rect.getPosition().x;
+				int xpos = (int)nodes[y * mapWidth + x].rect->getX();
 				int dx = xpos + 40;
-				int ypos = (int)nodes[y * mapWidth + x].rect.getPosition().y;
+				int ypos = (int)nodes[y * mapWidth + x].rect->getY();
 				int dy = ypos + 40;
 
 				if (mousePosition.x >= xpos && mousePosition.x <= dx && mousePosition.y >= ypos && mousePosition.y <= dy)
@@ -193,12 +194,12 @@ void PathFinding::drawMap(sf::RenderWindow & window)
 	{
 		for (int x = 0; x < mapWidth; x++)
 		{
-			if (&nodes[y * mapWidth + x] == nodeEnd) nodes[y * mapWidth + x].rect.setFillColor(sf::Color::Red);
-			else if (&nodes[y * mapWidth + x] == nodeStart) nodes[y * mapWidth + x].rect.setFillColor(sf::Color::Green);
-			else if (nodes[y * mapWidth + x].visited) nodes[y * mapWidth + x].rect.setFillColor(sf::Color::Blue);
-			else if (!nodes[y * mapWidth + x].obstacle) nodes[y * mapWidth + x].rect.setFillColor(sf::Color(65, 105, 225, 255));
-			else nodes[y * mapWidth + x].rect.setFillColor(sf::Color(105,105,105,255));
-			window.draw(nodes[y * mapWidth + x].rect);
+			if (&nodes[y * mapWidth + x] == nodeEnd) nodes[y * mapWidth + x].rect->changeColor(sf::Color::Red);
+			else if (&nodes[y * mapWidth + x] == nodeStart) nodes[y * mapWidth + x].rect->changeColor(sf::Color::Green);
+			else if (nodes[y * mapWidth + x].visited) nodes[y * mapWidth + x].rect->changeColor(sf::Color::Blue);
+			else if (!nodes[y * mapWidth + x].obstacle) nodes[y * mapWidth + x].rect->changeColor(sf::Color(65, 105, 225, 255));
+			else nodes[y * mapWidth + x].rect->changeColor(sf::Color(105,105,105,255));
+			nodes[y * mapWidth + x].rect->draw(window);
 		}
 	}
 
@@ -208,8 +209,11 @@ void PathFinding::drawMap(sf::RenderWindow & window)
 		Node *previous = nodeEnd;
 		while (previous->parent != nullptr)
 		{
-			previous->rect.setFillColor(sf::Color::Yellow);
-			if (notFirst) window.draw(previous->rect);
+			previous->rect->changeColor(sf::Color::Yellow);
+			if (notFirst)
+            {
+                previous->rect->draw(window);
+            }
 			previous = previous->parent;
 			notFirst = true;
 		}

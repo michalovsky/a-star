@@ -16,7 +16,7 @@ public:
 	Node * nodeStart = nullptr;
 	Node * nodeEnd = nullptr;
 	std::vector<sf::VertexArray> connections;
-	int mapWidth = 10;
-	int mapHeight = 10;
+	int mapWidth = 20;
+	int mapHeight = 20;
 };
 

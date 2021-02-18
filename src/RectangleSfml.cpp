@@ -26,9 +26,14 @@ bool RectangleSfml::isIntersecting(const sf::Vector2f& position) const
             position.y >= rectPosition.y && position.y <= rectPosition.y + height);
 }
 
-void RectangleSfml::draw(sf::RenderWindow& window)
+void RectangleSfml::draw(sf::RenderWindow& window) const
 {
     window.draw(rect);
+}
+
+sf::Vector2f RectangleSfml::getPosition() const
+{
+    return rect.getPosition();
 }
 
 float RectangleSfml::getX() const
@@ -40,4 +45,5 @@ float RectangleSfml::getY() const
 {
     return rect.getPosition().y;
 }
+
 }

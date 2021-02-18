@@ -1,5 +1,8 @@
 set(SOURCES
         RectangleSfml.cpp
+        LineSfml.cpp
+        GraphicsIdGenerator.cpp
+        MapRenderer.cpp
         PathFinding.cpp
         Main.cpp
         )

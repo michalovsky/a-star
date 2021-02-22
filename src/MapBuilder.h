@@ -4,16 +4,15 @@
 #include <memory>
 #include "Node.h"
 
-namespace graphics
-{
 class MapBuilder
 {
 public:
-    MapBuilder(std::shared_ptr<MapRenderer>);
+    MapBuilder(std::shared_ptr<graphics::MapRenderer>);
 
-    void buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector<Node>);
+    std::vector<Node> buildMap(int mapWidth, int mapHeight);
 
 private:
-    std::shared_ptr<MapRenderer> mapRenderer;
+    void buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector<Node>&);
+
+    std::shared_ptr<graphics::MapRenderer> mapRenderer;
 };
-}

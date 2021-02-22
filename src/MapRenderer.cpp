@@ -1,11 +1,13 @@
 #include "MapRenderer.h"
 
+#include <utility>
+
 #include "GraphicsIdGenerator.h"
 
 namespace graphics
 {
 
-MapRenderer::MapRenderer(sf::RenderWindow& windowInit) : window{windowInit} {}
+MapRenderer::MapRenderer(std::shared_ptr<sf::RenderWindow> windowInit) : window{std::move(windowInit)} {}
 
 GraphicsId MapRenderer::acquireRect(const sf::Vector2f& position, const sf::Vector2f& size,
                                     const sf::Color& color)
@@ -34,16 +36,21 @@ sf::Vector2f MapRenderer::getRectPosition(const GraphicsId& id) const
     return rects.at(id).getPosition();
 }
 
+bool MapRenderer::intersects(const GraphicsId& id, const sf::Vector2f& position) const
+{
+    return rects.at(id).isIntersecting(position);
+}
+
 void MapRenderer::renderAll()
 {
     for (const auto& rect : rects)
     {
-        rect.second.draw(window);
+        rect.second.draw(*window);
     }
 
     for (const auto& line : lines)
     {
-        line.draw(window);
+        line.draw(*window);
     }
 }
 

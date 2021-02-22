@@ -1,14 +1,27 @@
 #include "MapBuilder.h"
 
-namespace graphics
-{
-
-MapBuilder::MapBuilder(std::shared_ptr<MapRenderer> mapRendererInit) : mapRenderer{std::move(mapRendererInit)}
+MapBuilder::MapBuilder(std::shared_ptr<graphics::MapRenderer> mapRendererInit)
+    : mapRenderer{std::move(mapRendererInit)}
 {
 }
 
-void MapBuilder::buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector<Node> nodes)
+std::vector<Node> MapBuilder::buildMap(int mapWidth, int mapHeight)
 {
+    std::vector<Node> nodes(mapHeight * mapWidth);
+
+    for (int y = 0; y < mapHeight; y++)
+    {
+        for (int x = 0; x < mapWidth; x++)
+        {
+            nodes[y * mapWidth + x].x = x;
+            nodes[y * mapWidth + x].y = y;
+            const auto position = sf::Vector2f{5.f + (x * 5.f) + 40.f * x, 5.f + (y * 5.f) + 40.f * y};
+            const auto size = sf::Vector2f{40.f, 40.f};
+            nodes[y * mapWidth + x].graphicsId = mapRenderer->acquireRect(position, size, sf::Color::Blue);
+        }
+    }
+
+    // setting neighbours
     for (int y = 0; y < mapHeight; y++)
     {
         for (int x = 0; x < mapWidth; x++)
@@ -16,7 +29,35 @@ void MapBuilder::buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector
             if (y > 0)
             {
                 nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y - 1) * mapWidth + x]);
+            }
+            if (y < mapHeight - 1)
+            {
+                nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y + 1) * mapWidth + x]);
+            }
+            if (x > 0)
+            {
+                nodes[y * mapWidth + x].neighbours.push_back(&nodes[y * mapWidth + x - 1]);
+            }
+            if (x < mapWidth - 1)
+            {
+                nodes[y * mapWidth + x].neighbours.push_back(&nodes[y * mapWidth + x + 1]);
+            }
+        }
+    }
 
+    buildLinesBetweenNodes(mapWidth, mapHeight, nodes);
+
+    return nodes;
+}
+
+void MapBuilder::buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector<Node>& nodes)
+{
+    for (int y = 0; y < mapHeight; y++)
+    {
+        for (int x = 0; x < mapWidth; x++)
+        {
+            if (y > 0)
+            {
                 const auto startRectPosition =
                     mapRenderer->getRectPosition(nodes[y * mapWidth + x].graphicsId);
                 const auto endRectPosition =
@@ -28,8 +69,6 @@ void MapBuilder::buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector
             }
             if (y < mapHeight - 1)
             {
-                nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y + 1) * mapWidth + x]);
-
                 const auto startRectPosition =
                     mapRenderer->getRectPosition(nodes[y * mapWidth + x].graphicsId);
                 const auto endRectPosition =
@@ -41,8 +80,6 @@ void MapBuilder::buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector
             }
             if (x > 0)
             {
-                nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y + 0) * mapWidth + x - 1]);
-
                 const auto startRectPosition =
                     mapRenderer->getRectPosition(nodes[y * mapWidth + x].graphicsId);
                 const auto endRectPosition =
@@ -54,8 +91,6 @@ void MapBuilder::buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector
             }
             if (x < mapWidth - 1)
             {
-                nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y + 0) * mapWidth + x + 1]);
-
                 const auto startRectPosition =
                     mapRenderer->getRectPosition(nodes[y * mapWidth + x].graphicsId);
                 const auto endRectPosition =
@@ -67,6 +102,4 @@ void MapBuilder::buildLinesBetweenNodes(int mapWidth, int mapHeight, std::vector
             }
         }
     }
-}
-
 }

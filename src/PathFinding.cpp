@@ -2,9 +2,12 @@
 
 #include <SFML/Graphics.hpp>
 #include <cmath>
+#include <iostream>
 
-PathFinding::PathFinding(sf::RenderWindow& windowInit)
-    : mapRenderer{std::make_shared<graphics::MapRenderer>(windowInit)}, mapBuilder{std::make_unique<graphics::MapBuilder>(mapRenderer)}, nodes(mapWidth * mapHeight)
+PathFinding::PathFinding(std::shared_ptr<sf::RenderWindow> window)
+    : mapRenderer{std::make_shared<graphics::MapRenderer>(window)},
+      mapBuilder{std::make_unique<MapBuilder>(mapRenderer)},
+      inputReader{std::make_unique<input::UserInputReader>(window)}
 {
 }
 
@@ -60,7 +63,7 @@ void PathFinding::solveAStar()
             if (!nodeNeighbour->visited && !nodeNeighbour->obstacle)
                 listNotTestedNodes.push_back(nodeNeighbour);
 
-            // neighbours potential lowest parentt distance
+            // neighbours potential lowest parent distance
             float possiblyLowerGoal = nodeCurrent->localGoal + distance(nodeCurrent, nodeNeighbour);
 
             // if choosing to path through this node is a lower distance than what
@@ -79,129 +82,66 @@ void PathFinding::solveAStar()
 
 void PathFinding::createMap()
 {
-    for (int y = 0; y < mapHeight; y++)
-    {
-        for (int x = 0; x < mapWidth; x++)
-        {
-            nodes[y * mapWidth + x].x = x;
-            nodes[y * mapWidth + x].y = y;
-            const auto position = sf::Vector2f{5.f + (x * 5.f) + 40.f * x, 5.f + (y * 5.f) + 40.f * y};
-            const auto size = sf::Vector2f{40.f, 40.f};
-            nodes[y * mapWidth + x].graphicsId = mapRenderer->acquireRect(position, size, sf::Color::Blue);
-        }
-    }
-
-    mapBuilder->buildLinesBetweenNodes(mapWidth, mapHeight, nodes);
-
-    // setting neighbours
-    for (int y = 0; y < mapHeight; y++)
-    {
-        for (int x = 0; x < mapWidth; x++)
-        {
-            if (y > 0)
-            {
-                nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y - 1) * mapWidth + x]);
-            }
-            if (y < mapHeight - 1)
-            {
-                nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y + 1) * mapWidth + x]);
-            }
-            if (x > 0)
-            {
-                nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y + 0) * mapWidth + x - 1]);
-            }
-            if (x < mapWidth - 1)
-            {
-                nodes[y * mapWidth + x].neighbours.push_back(&nodes[(y + 0) * mapWidth + x + 1]);
-            }
-        }
-    }
-
+    nodes = mapBuilder->buildMap(mapWidth, mapHeight);
     nodeStart = &nodes[0];
     nodeEnd = &nodes[mapHeight / 2 * mapWidth + mapWidth + 2];
 }
 
 void PathFinding::updateMapByUser(sf::RenderWindow& window)
 {
-    sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+    const auto mousePosition = inputReader->readMousePosition();
+    const auto userKeysInput = inputReader->readUserInput();
+
+    if (not userKeysInput.at(input::InputKey::MouseLeft))
     {
-        bool changeObstacle = true;
-        bool changeStartNode = false;
-        bool changeEndNode = false;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
-        {
-            changeObstacle = false;
-            changeEndNode = true;
-        }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
-        {
-            changeObstacle = false;
-            changeStartNode = true;
-        }
+        return;
+    }
 
-        for (int y = 0; y < mapHeight; y++)
+    for (auto& node : nodes)
+    {
+        if (mapRenderer->intersects(node.graphicsId, mousePosition))
         {
-            for (int x = 0; x < mapWidth; x++)
+            if (userKeysInput.at(input::InputKey::ControlLeft))
             {
-                const auto rectPosition = mapRenderer->getRectPosition(nodes[y * mapWidth + x].graphicsId);
-
-                int xpos = rectPosition.x;
-                int dx = xpos + 40;
-                int ypos = rectPosition.y;
-                int dy = ypos + 40;
-
-                if (mousePosition.x >= xpos && mousePosition.x <= dx && mousePosition.y >= ypos &&
-                    mousePosition.y <= dy)
-                {
-                    if (changeObstacle)
-                    {
-                        nodes[y * mapWidth + x].obstacle = !(nodes[y * mapWidth + x].obstacle);
-                    }
-                    else if (changeStartNode)
-                    {
-                        nodeStart = &nodes[y * mapWidth + x];
-                    }
-                    else if (changeEndNode)
-                    {
-                        nodeEnd = &nodes[y * mapWidth + x];
-                    }
-                }
+                nodeEnd = &node;
+            }
+            else if (userKeysInput.at(input::InputKey::ShiftLeft))
+            {
+                nodeStart = &node;
+            }
+            else
+            {
+                node.obstacle = !node.obstacle;
             }
         }
-        if (changeEndNode || changeObstacle || changeStartNode)
-        {
-            solveAStar();
-        }
     }
+
+    solveAStar();
 }
 
 void PathFinding::drawMap(sf::RenderWindow& window)
 {
-    for (int y = 0; y < mapHeight; y++)
+    for (const auto& node : nodes)
     {
-        for (int x = 0; x < mapWidth; x++)
+        if (&node == nodeEnd)
         {
-            if (&nodes[y * mapWidth + x] == nodeEnd)
-            {
-                mapRenderer->setColor(nodes[y * mapWidth + x].graphicsId, sf::Color::Red);
-            }
-            else if (&nodes[y * mapWidth + x] == nodeStart)
-            {
-                mapRenderer->setColor(nodes[y * mapWidth + x].graphicsId, sf::Color::Green);
-            }
-            else if (nodes[y * mapWidth + x].visited)
-            {
-                mapRenderer->setColor(nodes[y * mapWidth + x].graphicsId, sf::Color::Blue);
-            }
-            else if (!nodes[y * mapWidth + x].obstacle)
-            {
-                mapRenderer->setColor(nodes[y * mapWidth + x].graphicsId, sf::Color(65, 105, 225, 255));
-            }
-            else
-            {
-                mapRenderer->setColor(nodes[y * mapWidth + x].graphicsId, sf::Color(0, 0, 0, 255));
-            }
+            mapRenderer->setColor(node.graphicsId, sf::Color::Red);
+        }
+        else if (&node == nodeStart)
+        {
+            mapRenderer->setColor(node.graphicsId, sf::Color::Green);
+        }
+        else if (node.visited)
+        {
+            mapRenderer->setColor(node.graphicsId, sf::Color::Blue);
+        }
+        else if (!node.obstacle)
+        {
+            mapRenderer->setColor(node.graphicsId, sf::Color(65, 105, 225, 255));
+        }
+        else
+        {
+            mapRenderer->setColor(node.graphicsId, sf::Color(0, 0, 0, 255));
         }
     }
 

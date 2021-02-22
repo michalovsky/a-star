@@ -1,4 +1,5 @@
 set(SOURCES
+        UserInputReader.cpp
         RectangleSfml.cpp
         LineSfml.cpp
         GraphicsIdGenerator.cpp

@@ -7,25 +7,26 @@ void clearWindow(sf::RenderWindow& window);
 int main()
 {
     sf::Clock clock;
-    sf::RenderWindow window(sf::VideoMode(910, 910), "PathFinding A*");
-    window.setFramerateLimit(60);
+    std::shared_ptr<sf::RenderWindow> window =
+        std::make_shared<sf::RenderWindow>(sf::VideoMode(910, 910), "PathFinding A*");
+    window->setFramerateLimit(60);
     PathFinding pathFinding{window};
     pathFinding.createMap();
 
-    while (window.isOpen())
+    while (window->isOpen())
     {
         sf::Time elapsed = clock.getElapsedTime();
-        clearWindow(window);
+        clearWindow(*window);
 
         if (elapsed.asSeconds() > 0.1)
         {
             clock.restart();
-            pathFinding.updateMapByUser(window);
+            pathFinding.updateMapByUser(*window);
         }
 
-        pathFinding.drawMap(window);
+        pathFinding.drawMap(*window);
 
-        window.display();
+        window->display();
     }
 
     return 0;

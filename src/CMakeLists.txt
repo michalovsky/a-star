@@ -6,6 +6,8 @@ set(SOURCES
         MapBuilder.cpp
         MapRenderer.cpp
         PathFinding.cpp
+        AStarApp.cpp
+        AStarAppFactory.cpp
         Main.cpp
         )
 

@@ -2,6 +2,11 @@
 
 #include <SFML/Window/Event.hpp>
 
+namespace
+{
+const auto timeAfterUserCanClickAgain = 0.2;
+}
+
 AStarApp::AStarApp(std::shared_ptr<sf::RenderWindow> windowInit,
                    std::shared_ptr<graphics::MapRenderer> rendererInit,
                    std::unique_ptr<MapBuilder> mapBuilderInit,
@@ -53,7 +58,7 @@ void AStarApp::update()
     for (auto& node : nodes)
     {
         if (mapRenderer->intersects(node.graphicsId, mousePosition) &&
-            clock.getElapsedTime().asSeconds() > 0.2)
+            clock.getElapsedTime().asSeconds() >= timeAfterUserCanClickAgain)
         {
             clock.restart();
 
@@ -138,6 +143,5 @@ bool AStarApp::windowNeedToBeClosed(const std::unordered_map<input::InputKey, bo
             return true;
         }
     }
-
     return userKeysInput.at(input::InputKey::Escape);
 }

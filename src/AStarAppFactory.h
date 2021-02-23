@@ -5,5 +5,5 @@
 class AStarAppFactory
 {
 public:
-    static std::unique_ptr<AStarApp> createAStarApp();
+    static std::unique_ptr<AStarApp> createAStarApp(int mapWidth, int mapHeight);
 };

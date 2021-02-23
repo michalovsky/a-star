@@ -5,11 +5,14 @@
 AStarApp::AStarApp(std::shared_ptr<sf::RenderWindow> windowInit,
                    std::shared_ptr<graphics::MapRenderer> rendererInit,
                    std::unique_ptr<MapBuilder> mapBuilderInit,
-                   std::unique_ptr<input::UserInputReader> inputReaderInit)
+                   std::unique_ptr<input::UserInputReader> inputReaderInit, int mapWidthInit,
+                   int mapHeightInit)
     : window{std::move(windowInit)},
       mapRenderer{std::move(rendererInit)},
       mapBuilder{std::move(mapBuilderInit)},
-      inputReader{std::move(inputReaderInit)}
+      inputReader{std::move(inputReaderInit)},
+      mapWidth{mapWidthInit},
+      mapHeight{mapHeightInit}
 {
 }
 
@@ -50,7 +53,7 @@ void AStarApp::update()
     for (auto& node : nodes)
     {
         if (mapRenderer->intersects(node.graphicsId, mousePosition) &&
-            clock.getElapsedTime().asSeconds() > 0.1)
+            clock.getElapsedTime().asSeconds() > 0.2)
         {
             clock.restart();
 

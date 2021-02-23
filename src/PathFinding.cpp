@@ -1,6 +1,5 @@
 #include "PathFinding.h"
 
-#include <SFML/Graphics.hpp>
 #include <cmath>
 
 void PathFinding::solveAStar(std::vector<Node>& nodes, Node* nodeStart, Node* nodeEnd)

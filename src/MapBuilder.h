@@ -1,7 +1,8 @@
 #pragma once
 
-#include "MapRenderer.h"
 #include <memory>
+
+#include "MapRenderer.h"
 #include "Node.h"
 
 class MapBuilder

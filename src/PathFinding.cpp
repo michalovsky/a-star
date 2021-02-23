@@ -1,17 +1,11 @@
 #include "PathFinding.h"
 
 #include <cmath>
+#include <list>
 
-void PathFinding::solveAStar(std::vector<Node>& nodes, Node* nodeStart, Node* nodeEnd)
+void PathFinding::solveAStar(std::vector<Node>& nodes, Node* startNode, Node* endNode)
 {
-    // reset nodes
-    for (auto& node : nodes)
-    {
-        node.visited = false;
-        node.globalGoal = INFINITY;
-        node.localGoal = INFINITY;
-        node.parent = nullptr;
-    }
+    resetNodes(nodes);
 
     auto distance = [](Node* a, Node* b) {
         return sqrtf((a->x - b->x) * (a->x - b->x) + (a->y - b->y) * (a->y - b->y));
@@ -19,57 +13,71 @@ void PathFinding::solveAStar(std::vector<Node>& nodes, Node* nodeStart, Node* no
 
     auto heuristic = [distance](Node* a, Node* b) { return distance(a, b); };
 
-    // start conditions
-    Node* nodeCurrent = nodeStart;
-    nodeStart->localGoal = 0.0f;
-    nodeStart->globalGoal = heuristic(nodeStart, nodeEnd);
+    Node* currentNode = startNode;
+    startNode->distanceFromStartingNode = 0.0f;
+    startNode->distanceFromEndNode = heuristic(startNode, endNode);
 
-    // not visited list
-    std::list<Node*> listNotTestedNodes;
-    listNotTestedNodes.push_back(nodeStart);
+    std::list<Node*> nodesToVisit;
+    nodesToVisit.push_back(startNode);
 
-    // algorithm
-    while (!listNotTestedNodes.empty() && nodeCurrent != nodeEnd)
+    while (not nodesToVisit.empty() && currentNode != endNode)
     {
-        // sorting
-        listNotTestedNodes.sort(
-            [](const Node* lhs, const Node* rhs) { return lhs->globalGoal < rhs->globalGoal; });
-        // visited nodes
-        while (!listNotTestedNodes.empty() && listNotTestedNodes.front()->visited)
+        nodesToVisit.sort([](const Node* lhs, const Node* rhs) {
+            return lhs->distanceFromEndNode < rhs->distanceFromEndNode;
+        });
+
+        while (not nodesToVisit.empty() && nodesToVisit.front()->visited)
         {
-            listNotTestedNodes.pop_front();
+            nodesToVisit.pop_front();
         }
 
-        // if no more nodes to visit end
-        if (listNotTestedNodes.empty())
+        if (nodesToVisit.empty())
         {
             break;
         }
 
-        nodeCurrent = listNotTestedNodes.front();
-        nodeCurrent->visited = true; // only explore a node once
+        currentNode = nodesToVisit.front();
+        currentNode->visited = true;
 
-        for (auto nodeNeighbour : nodeCurrent->neighbours)
+        for (auto neighbourNode : currentNode->neighbours)
         {
-            // if neighbour is not visited, is not obstacle add to not tested
-            if (!nodeNeighbour->visited && !nodeNeighbour->obstacle)
+            if (nodeIsNotAlreadyVisited(neighbourNode) && nodeIsNotObstacle(neighbourNode))
             {
-                listNotTestedNodes.push_back(nodeNeighbour);
+                nodesToVisit.push_back(neighbourNode);
             }
 
-            // neighbours potential lowest parent distance
-            float possiblyLowerGoal = nodeCurrent->localGoal + distance(nodeCurrent, nodeNeighbour);
+            float possiblyLowerDistance =
+                currentNode->distanceFromStartingNode + distance(currentNode, neighbourNode);
 
-            // if choosing to path through this node is a lower distance than what
-            // the neighbour currently has set, update the neighbour to use this node
-            if (possiblyLowerGoal < nodeNeighbour->localGoal)
+            if (possiblyLowerDistance < neighbourNode->distanceFromStartingNode)
             {
-                nodeNeighbour->parent = nodeCurrent;
-                nodeNeighbour->localGoal = possiblyLowerGoal;
+                neighbourNode->parent = currentNode;
+                neighbourNode->distanceFromStartingNode = possiblyLowerDistance;
 
-                // the best path length to the neighbour being tested has changed so update global score
-                nodeNeighbour->globalGoal = nodeNeighbour->localGoal + heuristic(nodeNeighbour, nodeEnd);
+                neighbourNode->distanceFromEndNode =
+                    neighbourNode->distanceFromStartingNode + heuristic(neighbourNode, endNode);
             }
         }
     }
+}
+
+void PathFinding::resetNodes(std::vector<Node>& nodes)
+{
+    for (auto& node : nodes)
+    {
+        node.visited = false;
+        node.distanceFromEndNode = INFINITY;
+        node.distanceFromStartingNode = INFINITY;
+        node.parent = nullptr;
+    }
+}
+
+bool PathFinding::nodeIsNotObstacle(const Node* neighbourNode)
+{
+    return not neighbourNode->obstacle;
+}
+
+bool PathFinding::nodeIsNotAlreadyVisited(const Node* neighbourNode)
+{
+    return not neighbourNode->visited;
 }

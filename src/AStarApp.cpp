@@ -24,6 +24,7 @@ AStarApp::AStarApp(std::shared_ptr<sf::RenderWindow> windowInit,
 void AStarApp::run()
 {
     createMap();
+    PathFinding::solveAStar(nodes, nodeStart, nodeEnd);
     while (window->isOpen())
     {
         clearWindow();

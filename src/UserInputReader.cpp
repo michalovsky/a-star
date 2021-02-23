@@ -1,10 +1,10 @@
 #include "UserInputReader.h"
 
-#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Mouse.hpp>
 
 namespace input
 {
-
 UserInputReader::UserInputReader(std::shared_ptr<sf::RenderWindow> windowInit) : window{std::move(windowInit)}
 {
 }

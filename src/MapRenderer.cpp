@@ -1,7 +1,5 @@
 #include "MapRenderer.h"
 
-#include <utility>
-
 #include "GraphicsIdGenerator.h"
 
 namespace graphics

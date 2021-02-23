@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <memory>
-#include <optional>
 
 #include "InputKey.h"
 
